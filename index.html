@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLMアシスタント選択</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .assistants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .assistant-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+        }
+
+        .assistant-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .assistant-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .assistant-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .assistant-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .server-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .assistants-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .assistant-card {
+                padding: 1.5rem;
+            }
+
+            .assistant-icon {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 SLMアシスタント</h1>
+        <p class="subtitle">あなたの専属AIアシスタントを選択してください</p>
+
+        <div class="assistants-grid">
+            <a href="recipe/chat.html" class="assistant-card">
+                <div class="assistant-icon">🍳</div>
+                <div class="assistant-name">献立アシスタント</div>
+                <div class="assistant-description">
+                    料理研究家として美味しい献立を提案。<br>
+                    レシピ検索やお気に入り管理も可能。
+                </div>
+            </a>
+
+            <a href="fortune/chat.html" class="assistant-card">
+                <div class="assistant-icon">☯️</div>
+                <div class="assistant-name">易占いアシスタント</div>
+                <div class="assistant-description">
+                    古代中国の易学で占います。<br>
+                    六十四卦、五行思想、陰陽で運勢を読み解きます。
+                </div>
+            </a>
+
+            <a href="robotics/chat.html" class="assistant-card">
+                <div class="assistant-icon">🤖</div>
+                <div class="assistant-name">ロボ開発アシスタント</div>
+                <div class="assistant-description">
+                    ロボット開発をサポート。<br>
+                    Arduino、センサー、制御プログラムまで。
+                </div>
+            </a>
+        </div>
+
+        <div class="status">
+            <div class="status-title">📡 サーバー情報</div>
+            <div class="server-info">
+                LM Studio API: http://192.168.2.107:1234<br>
+                HTTPサーバー: http://192.168.2.107:8000<br>
+                すべてローカルネットワーク内で動作します
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // サービスワーカー登録（PWA対応）
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+
+        // LM Studio API接続テスト
+        async function testConnection() {
+            try {
+                const response = await fetch('http://192.168.2.107:1234/v1/models');
+                if (response.ok) {
+                    console.log('✅ LM Studio API接続OK');
+                } else {
+                    console.log('⚠️ LM Studio API接続に問題があります');
+                }
+            } catch (error) {
+                console.log('❌ LM Studio APIに接続できません:', error);
+            }
+        }
+
+        // ページ読み込み時にAPI接続テスト
+        window.addEventListener('load', testConnection);
+
+        // カードクリック時のフィードバック
+        document.querySelectorAll('.assistant-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                console.log('アシスタント選択:', this.querySelector('.assistant-name').textContent);
+            });
+        });
+    </script>
+</body>
+</html>

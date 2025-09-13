@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ポケット献立アシスタント</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA対応 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="献立AI">
+    <link rel="apple-touch-icon" href="icon.svg">
+    
+    <!-- インストール促進 -->
+    <meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+    <div class="container">
+        <h2>ポケット献立アシスタント</h2>
+        
+        <div id="status"></div>
+        <div class="messages" id="messages">
+            <!-- 初期メッセージ -->
+            <div class="message ai welcome-message">
+                <div class="welcome-content">
+                    <h3>🎯 ポケット献立アシスタントへようこそ！</h3>
+                    <p>「いつも」という言葉を含めると、AIに設定されたあなたの好みやよく作る料理から優先して献立を提案します。AIが新しい献立のアイデアを提案します。</p>
+                    <div class="example-queries">
+                        <p><strong>例：</strong></p>
+                        <ul>
+                            <li>「<strong>いつも</strong>作っているやつで鶏肉を使ったレシピを提案して」</li>
+                            <li>「<strong>いつも</strong>のやつであっさりしたレシピを提案して」</li>
+                            <li>「<strong>いつも</strong>のやつで簡単に作れるやつある？」</li>
+                            <li>「<strong>いつも</strong>のやつであのピリ辛のやつなんだっけ？」</li>
+                        </ul>
+                    </div>
+                    <p class="tip">💡 「いつも」という言葉を含めると、AIの設定から優先して献立を提案します！</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="userInput" data-placeholders='["今日はどんな料理を作りたいですか？", "献立に迷ったらここに質問を入力してください", "材料や調味料だけの相談もできます", "「いつも」という言葉を含めると、AIがあなたの好みを考慮します", "簡単な料理から本格的な料理まで、何でも相談してください"]' onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" id="sendBtn">送信</button>
+            <button onclick="clearChat()" id="clearBtn" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">クリア</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    
+    <!-- メッセージ詳細表示モーダル -->
+    <div id="messageModal" class="message-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>メッセージ詳細</h3>
+                <button id="closeModal" class="close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalMessageContent"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PWAインストール促進 -->
+    <div id="installPrompt" class="install-prompt" style="display: none;">
+        <div class="install-content">
+            <p>📱 ホーム画面に追加して、アプリのように使おう！</p>
+            <button id="installBtn" class="install-btn">インストール</button>
+            <button id="dismissBtn" class="dismiss-btn">後で</button>
+        </div>
+    </div>
+    
+    <script>
+        // Service Workerの登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('Service Worker登録成功:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker登録失敗:', error);
+                    });
+            });
+        }
+        
+        // PWAインストール促進
+        let deferredPrompt;
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const dismissBtn = document.getElementById('dismissBtn');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.style.display = 'block';
+        });
+        
+        installBtn.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('ユーザーがインストールを承認しました');
+                }
+                deferredPrompt = null;
+            });
+        });
+        
+        dismissBtn.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "易占いアシスタント",
+  "short_name": "易占いAI",
+  "description": "古代中国の易学に基づいたAI占いアプリ",
+  "start_url": "/chat.html",
+  "display": "standalone",
+  "background_color": "#c0392b",
+  "theme_color": "#c0392b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "lifestyle", "utilities"],
+  "lang": "ja"
+}
