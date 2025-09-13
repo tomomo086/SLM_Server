@@ -92,27 +92,69 @@
             });
         }
         
-        // PWAインストール促進
+        // PWAインストール促進とデバッグ
         let deferredPrompt;
         const installPrompt = document.getElementById('installPrompt');
         const installBtn = document.getElementById('installBtn');
         const dismissBtn = document.getElementById('dismissBtn');
         
+        // PWA要件のチェック
+        function checkPWARequirements() {
+            const requirements = {
+                'HTTPS': location.protocol === 'https:' || location.hostname === 'localhost',
+                'Manifest': document.querySelector('link[rel="manifest"]') !== null,
+                'Service Worker': 'serviceWorker' in navigator,
+                'Icons': true // アイコンは存在すると仮定
+            };
+            
+            console.log('PWA要件チェック:', requirements);
+            
+            // 要件が満たされていない場合の警告
+            if (!requirements.HTTPS) {
+                console.warn('HTTPS接続が必要です');
+            }
+            if (!requirements.Manifest) {
+                console.warn('Web App Manifestが見つかりません');
+            }
+            if (!requirements['Service Worker']) {
+                console.warn('Service Workerがサポートされていません');
+            }
+            
+            return requirements;
+        }
+        
+        // ページ読み込み時にPWA要件をチェック
+        checkPWARequirements();
+        
         window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWAインストールプロンプトが表示可能です');
             e.preventDefault();
             deferredPrompt = e;
             installPrompt.style.display = 'block';
         });
         
-        installBtn.addEventListener('click', () => {
+        // インストール済みかチェック
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWAがインストールされました');
             installPrompt.style.display = 'none';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('ユーザーがインストールを承認しました');
-                }
-                deferredPrompt = null;
-            });
+        });
+        
+        installBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                installPrompt.style.display = 'none';
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('ユーザーがインストールを承認しました');
+                    } else {
+                        console.log('ユーザーがインストールを拒否しました');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                console.log('インストールプロンプトが利用できません');
+                alert('このブラウザではPWAインストールがサポートされていません。\n手動で「ホーム画面に追加」を試してください。');
+            }
         });
         
         dismissBtn.addEventListener('click', () => {

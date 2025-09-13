@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>アイコン生成器</title>
+</head>
+<body>
+    <h1>PWAアイコン生成器</h1>
+    <p>このページでSVGアイコンをPNGに変換できます。</p>
+    
+    <div id="icon-container">
+        <svg id="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+            <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#c0392b;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#8e44ad;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            
+            <!-- 背景円 -->
+            <circle cx="256" cy="256" r="240" fill="url(#grad1)" stroke="#fff" stroke-width="16"/>
+            
+            <!-- 水晶玉 -->
+            <circle cx="256" cy="200" r="80" fill="#fff" opacity="0.9"/>
+            <circle cx="256" cy="200" r="60" fill="none" stroke="#c0392b" stroke-width="3"/>
+            
+            <!-- 占いの象徴的な要素 -->
+            <g fill="#c0392b">
+                <!-- 星 -->
+                <polygon points="256,120 260,140 280,140 264,152 268,172 256,160 244,172 248,152 232,140 252,140" fill="#fff"/>
+                <!-- 月 -->
+                <path d="M 180 300 A 40 40 0 0 1 180 380 A 20 20 0 0 0 180 300" fill="#fff"/>
+                <!-- 太陽 -->
+                <circle cx="340" cy="300" r="25" fill="#fff"/>
+                <line x1="340" y1="260" x2="340" y2="240" stroke="#fff" stroke-width="4"/>
+                <line x1="340" y1="360" x2="340" y2="380" stroke="#fff" stroke-width="4"/>
+                <line x1="300" y1="300" x2="280" y2="300" stroke="#fff" stroke-width="4"/>
+                <line x1="400" y1="300" x2="420" y2="300" stroke="#fff" stroke-width="4"/>
+            </g>
+            
+            <!-- AIの象徴的な要素 -->
+            <circle cx="256" cy="420" r="20" fill="#fff" opacity="0.9"/>
+            <circle cx="240" cy="410" r="4" fill="#c0392b"/>
+            <circle cx="272" cy="410" r="4" fill="#c0392b"/>
+            <path d="M 248 430 Q 256 435 264 430" stroke="#c0392b" stroke-width="2" fill="none"/>
+        </svg>
+    </div>
+    
+    <div>
+        <button onclick="generateIcon(192)">192x192 PNG生成</button>
+        <button onclick="generateIcon(512)">512x512 PNG生成</button>
+        <button onclick="generateMaskableIcon(192)">192x192 Maskable PNG生成</button>
+        <button onclick="generateMaskableIcon(512)">512x512 Maskable PNG生成</button>
+    </div>
+    
+    <script>
+        function generateIcon(size) {
+            const svg = document.getElementById('icon-svg');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const img = new Image();
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+                const link = document.createElement('a');
+                link.download = `icon-${size}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            };
+            
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        }
+        
+        function generateMaskableIcon(size) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            // マスク可能アイコン用の背景（安全領域を考慮）
+            const safeArea = size * 0.1; // 10%のマージン
+            const iconSize = size - (safeArea * 2);
+            
+            // 背景を透明に
+            ctx.clearRect(0, 0, size, size);
+            
+            // アイコンを中央に配置
+            const svg = document.getElementById('icon-svg');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const img = new Image();
+            
+            img.onload = function() {
+                ctx.drawImage(img, safeArea, safeArea, iconSize, iconSize);
+                const link = document.createElement('a');
+                link.download = `icon-${size}-maskable.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            };
+            
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        }
+    </script>
+</body>
+</html>

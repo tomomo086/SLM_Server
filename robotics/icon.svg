@@ -1,30 +1,44 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#2c3e50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34495e;stop-opacity:1" />
     </linearGradient>
   </defs>
   
   <!-- 背景円 -->
   <circle cx="256" cy="256" r="240" fill="url(#grad1)" stroke="#fff" stroke-width="16"/>
   
-  <!-- フォークとナイフ -->
-  <g fill="#fff">
-    <!-- フォーク -->
-    <rect x="180" y="120" width="8" height="200" rx="4"/>
-    <rect x="160" y="140" width="8" height="160" rx="4"/>
-    <rect x="200" y="140" width="8" height="160" rx="4"/>
-    <rect x="140" y="140" width="8" height="160" rx="4"/>
-    
-    <!-- ナイフ -->
-    <rect x="280" y="120" width="12" height="200" rx="6"/>
-    <polygon points="280,120 320,140 320,160 280,140" fill="#fff"/>
-  </g>
+  <!-- ロボットの頭 -->
+  <rect x="200" y="150" width="112" height="100" rx="20" fill="#fff"/>
+  
+  <!-- ロボットの目 -->
+  <circle cx="230" cy="190" r="15" fill="#2c3e50"/>
+  <circle cx="282" cy="190" r="15" fill="#2c3e50"/>
+  <circle cx="230" cy="190" r="8" fill="#3498db"/>
+  <circle cx="282" cy="190" r="8" fill="#3498db"/>
+  
+  <!-- ロボットの口 -->
+  <rect x="240" y="220" width="32" height="8" rx="4" fill="#2c3e50"/>
+  
+  <!-- ロボットの体 -->
+  <rect x="180" y="250" width="152" height="120" rx="15" fill="#fff"/>
+  
+  <!-- ロボットの腕 -->
+  <rect x="150" y="270" width="30" height="80" rx="15" fill="#fff"/>
+  <rect x="332" y="270" width="30" height="80" rx="15" fill="#fff"/>
+  
+  <!-- ロボットの手 -->
+  <circle cx="165" cy="360" r="15" fill="#2c3e50"/>
+  <circle cx="347" cy="360" r="15" fill="#2c3e50"/>
+  
+  <!-- ロボットの足 -->
+  <rect x="200" y="370" width="40" height="60" rx="20" fill="#fff"/>
+  <rect x="272" y="370" width="40" height="60" rx="20" fill="#fff"/>
   
   <!-- AIの象徴的な要素 -->
-  <circle cx="256" cy="380" r="20" fill="#fff" opacity="0.9"/>
-  <circle cx="240" cy="370" r="4" fill="#667eea"/>
-  <circle cx="272" cy="370" r="4" fill="#667eea"/>
-  <path d="M 248 390 Q 256 395 264 390" stroke="#667eea" stroke-width="2" fill="none"/>
+  <circle cx="256" cy="450" r="15" fill="#fff" opacity="0.9"/>
+  <circle cx="248" cy="445" r="3" fill="#2c3e50"/>
+  <circle cx="264" cy="445" r="3" fill="#2c3e50"/>
+  <path d="M 250 455 Q 256 458 262 455" stroke="#2c3e50" stroke-width="2" fill="none"/>
 </svg>
