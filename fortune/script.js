@@ -675,7 +675,7 @@ function optimizeForMobile() {
 }
 
 // AIメッセージのタイピング効果
-function typewriteText(element, text, speed = 15) {
+function typewriteText(element, text, speed = 5) {
     return new Promise((resolve) => {
         let index = 0;
         element.textContent = '';
@@ -716,7 +716,7 @@ function startTypingAnimation() {
         // プレースホルダーを更新
         input.setAttribute('placeholder', currentText);
         
-        let typeSpeed = isDeleting ? 50 : 100; // 削除の方が速い
+        let typeSpeed = isDeleting ? 30 : 50; // 削除の方が速い
         
         if (!isDeleting && currentText === currentPlaceholder) {
             // 完全に表示されたら、少し待ってから削除開始
