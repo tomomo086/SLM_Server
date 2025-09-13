@@ -4,17 +4,68 @@ const API_CONFIG = {
     model: 'local-model' // デフォルトモデル名
 };
 
-// 易占いデータ（後でJSONファイル追加予定）
-let HEXAGRAM_DATA = [];
+// 占い知識データ
+let FORTUNE_KNOWLEDGE_DATA = [];
 
-// 易占いデータを読み込む関数（最小限実装）
-async function loadHexagramData() {
-    console.log('🔮 易占いアシスタント準備完了');
-    showStatus('✓ 易占いアシスタントが起動しました');
+// 占い知識データを読み込む関数
+async function loadFortuneKnowledgeData() {
+    try {
+        const response = await fetch('data/fortune-knowledge.json');
+        if (response.ok) {
+            FORTUNE_KNOWLEDGE_DATA = await response.json();
+            console.log('🔮 占い知識データ読み込み完了:', FORTUNE_KNOWLEDGE_DATA.length, '件');
+            showStatus('✓ 占い知識データが読み込まれました');
+        } else {
+            console.error('占い知識データの読み込みに失敗しました');
+            showStatus('⚠️ 占い知識データの読み込みに失敗しました', true);
+        }
+    } catch (error) {
+        console.error('占い知識データ読み込みエラー:', error);
+        showStatus('⚠️ 占い知識データの読み込みエラー', true);
+    }
 }
 
-// Function Tools定義（易占い用・最小限実装）
+// Function Tools定義（占い知識検索用）
 const FUNCTION_TOOLS = [
+    {
+        type: "function",
+        function: {
+            name: "search_fortune_knowledge",
+            description: "占いの知識を検索します",
+            parameters: {
+                type: "object",
+                properties: {
+                    keyword: {
+                        type: "string",
+                        description: "検索キーワード（卦名、意味、キーワードなど）"
+                    },
+                    category: {
+                        type: "string",
+                        description: "カテゴリ（hexagram: 六十四卦、element: 五行、direction: 方位など）",
+                        enum: ["hexagram", "element", "direction", "season", "all"]
+                    }
+                },
+                required: ["keyword"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "get_hexagram_detail",
+            description: "特定の卦の詳細情報を取得します",
+            parameters: {
+                type: "object",
+                properties: {
+                    hexagram_id: {
+                        type: "string",
+                        description: "卦のID（例：hexagram_001）"
+                    }
+                },
+                required: ["hexagram_id"]
+            }
+        }
+    },
     {
         type: "function",
         function: {
@@ -39,11 +90,15 @@ const FUNCTION_TOOLS = [
     }
 ];
 
-// ローカルFunction実行（易占い用）
+// ローカルFunction実行（占い知識検索用）
 function executeLocalFunction(functionName, parameters) {
     console.log(`⚙️ ローカル関数「${functionName}」実行中...`, parameters);
 
     switch (functionName) {
+        case 'search_fortune_knowledge':
+            return searchFortuneKnowledge(parameters);
+        case 'get_hexagram_detail':
+            return getHexagramDetail(parameters);
         case 'perform_divination':
             return performDivination(parameters);
         default:
@@ -85,130 +140,137 @@ function performDivination(parameters) {
     return result;
 }
     
-    const results = RECIPE_DATA.map(recipe => {
+// 占い知識検索関数
+function searchFortuneKnowledge(parameters) {
+    const { keyword, category = 'all' } = parameters;
+    
+    if (!FORTUNE_KNOWLEDGE_DATA || FORTUNE_KNOWLEDGE_DATA.length === 0) {
+        return { 
+            success: false, 
+            message: '占い知識データが読み込まれていません' 
+        };
+    }
+
+    const searchText = keyword ? keyword.toLowerCase() : '';
+    const searchWords = searchText.split(/[\s　]+/).filter(word => word.length > 0);
+    
+    console.log(`🔍 占い知識検索: "${keyword}" (カテゴリ: ${category})`);
+    console.log(`🔍 検索ワード: [${searchWords.join(', ')}]`);
+
+    const results = FORTUNE_KNOWLEDGE_DATA.map(hexagram => {
         let score = 0;
-        const searchText = keyword ? keyword.toLowerCase() : '';
         
-        // キーワードを単語に分割（スペース、全角スペース区切り）
-        const searchWords = searchText.split(/[\s　]+/).filter(word => word.length > 0);
-        
-        console.log(`🔍 検索ワード: "${keyword}" → [${searchWords.join(', ')}]`);
-        console.log(`📝 レシピタイトル: "${recipe.title}"`);
-
-        // 料理名マッチング: 各単語について+20点
+        // 卦名マッチング: +30点
         if (searchWords.length > 0) {
-            const titleLower = recipe.title.toLowerCase();
-            const matchedWords = searchWords.filter(word => titleLower.includes(word));
+            const nameLower = hexagram.name.toLowerCase();
+            const matchedWords = searchWords.filter(word => nameLower.includes(word));
+            score += matchedWords.length * 30;
+            if (matchedWords.length > 0) {
+                console.log(`📊 卦名マッチ: ${matchedWords.length}個 (${matchedWords.join(', ')}) → +${matchedWords.length * 30}点`);
+            }
+        }
+
+        // 説明文マッチング: +20点
+        if (searchWords.length > 0) {
+            const descLower = hexagram.description.toLowerCase();
+            const matchedWords = searchWords.filter(word => descLower.includes(word));
             score += matchedWords.length * 20;
-            console.log(`📊 タイトルマッチ: ${matchedWords.length}個 (${matchedWords.join(', ')}) → +${matchedWords.length * 20}点`);
-        }
-
-        // 完全なキーワードマッチングも試す（従来の方式）
-        if (searchText && recipe.title.toLowerCase().includes(searchText)) {
-            score += 10; // ボーナス点
-            console.log(`🎯 完全マッチ: "${searchText}" → +10点`);
-        }
-
-        // エイリアス（別名）マッチング: +25点×個数
-        if (searchWords.length > 0 && recipe.aliases) {
-            searchWords.forEach(word => {
-                const aliasMatches = recipe.aliases.filter(alias => 
-                    alias.toLowerCase().includes(word)
-                );
-                if (aliasMatches.length > 0) {
-                    score += aliasMatches.length * 25;
-                    console.log(`🏷️ エイリアスマッチ: ${aliasMatches.length}個 (${aliasMatches.join(', ')}) → +${aliasMatches.length * 25}点`);
-                }
-            });
-        }
-
-        // 材料マッチング: +10点×個数
-        if (ingredients.length > 0) {
-            const matchedIngredients = ingredients.filter(ing => 
-                recipe.ingredients.some(recipeIng => 
-                    recipeIng.toLowerCase().includes(ing.toLowerCase())
-                )
-            );
-            if (matchedIngredients.length > 0) {
-                score += matchedIngredients.length * 10;
-                console.log(`🥬 材料マッチ: ${matchedIngredients.length}個 → +${matchedIngredients.length * 10}点`);
+            if (matchedWords.length > 0) {
+                console.log(`📝 説明マッチ: ${matchedWords.length}個 → +${matchedWords.length * 20}点`);
             }
         }
 
-        // 特徴マッチング: +5点×個数
-        if (searchWords.length > 0 && recipe.features) {
-            searchWords.forEach(word => {
-                const featureMatches = recipe.features.filter(feature => 
-                    feature.toLowerCase().includes(word)
-                );
-                if (featureMatches.length > 0) {
-                    score += featureMatches.length * 5;
-                    console.log(`✨ 特徴マッチ: ${featureMatches.length}個 → +${featureMatches.length * 5}点`);
-                }
-            });
-        }
-
-        // メイン材料マッチング: 各単語について+15点
+        // 意味マッチング: +15点
         if (searchWords.length > 0) {
-            let mainScore = 0;
-            searchWords.forEach(word => {
-                const mainMatches = recipe.main_ingredients.filter(main => 
-                    main.toLowerCase().includes(word)
-                );
-                mainScore += mainMatches.length * 15;
-            });
-            score += mainScore;
-            if (mainScore > 0) {
-                console.log(`🍆 メイン材料マッチ: +${mainScore}点`);
+            const meaningLower = hexagram.meaning.toLowerCase();
+            const matchedWords = searchWords.filter(word => meaningLower.includes(word));
+            score += matchedWords.length * 15;
+            if (matchedWords.length > 0) {
+                console.log(`💭 意味マッチ: ${matchedWords.length}個 → +${matchedWords.length * 15}点`);
             }
         }
 
-        // カテゴリマッチング: +10点
-        if (category && recipe.categories.includes(category)) {
-            score += 10;
-            console.log(`📂 カテゴリマッチ: "${category}" → +10点`);
+        // キーワードマッチング: +25点
+        if (searchWords.length > 0 && hexagram.keywords) {
+            searchWords.forEach(word => {
+                const keywordMatches = hexagram.keywords.filter(keyword => 
+                    keyword.toLowerCase().includes(word)
+                );
+                if (keywordMatches.length > 0) {
+                    score += keywordMatches.length * 25;
+                    console.log(`🏷️ キーワードマッチ: ${keywordMatches.length}個 (${keywordMatches.join(', ')}) → +${keywordMatches.length * 25}点`);
+                }
+            });
         }
 
-        return { ...recipe, score };
+        // 五行マッチング: +20点
+        if (searchWords.length > 0 && hexagram.elements) {
+            searchWords.forEach(word => {
+                const elementMatches = hexagram.elements.filter(element => 
+                    element.toLowerCase().includes(word)
+                );
+                if (elementMatches.length > 0) {
+                    score += elementMatches.length * 20;
+                    console.log(`🌿 五行マッチ: ${elementMatches.length}個 (${elementMatches.join(', ')}) → +${elementMatches.length * 20}点`);
+                }
+            });
+        }
+
+        // 方位マッチング: +15点
+        if (searchWords.length > 0 && hexagram.direction) {
+            const directionLower = hexagram.direction.toLowerCase();
+            const matchedWords = searchWords.filter(word => directionLower.includes(word));
+            score += matchedWords.length * 15;
+            if (matchedWords.length > 0) {
+                console.log(`🧭 方位マッチ: ${matchedWords.length}個 → +${matchedWords.length * 15}点`);
+            }
+        }
+
+        // 季節マッチング: +15点
+        if (searchWords.length > 0 && hexagram.season) {
+            const seasonLower = hexagram.season.toLowerCase();
+            const matchedWords = searchWords.filter(word => seasonLower.includes(word));
+            score += matchedWords.length * 15;
+            if (matchedWords.length > 0) {
+                console.log(`🌸 季節マッチ: ${matchedWords.length}個 → +${matchedWords.length * 15}点`);
+            }
+        }
+
+        return { ...hexagram, score };
     });
 
     const sortedResults = results
-        .filter(recipe => recipe.score > 0)
+        .filter(hexagram => hexagram.score > 0)
         .sort((a, b) => b.score - a.score);
     
-    console.log(`📈 検索結果: ${sortedResults.length}件`);
-    sortedResults.forEach((recipe, index) => {
-        console.log(`${index + 1}. "${recipe.title}" (スコア: ${recipe.score})`);
+    console.log(`📈 占い知識検索結果: ${sortedResults.length}件`);
+    sortedResults.forEach((hexagram, index) => {
+        console.log(`${index + 1}. "${hexagram.name}" (スコア: ${hexagram.score})`);
     });
 
     return {
         success: true,
         count: sortedResults.length,
-        recipes: sortedResults.slice(0, 10)
+        hexagrams: sortedResults.slice(0, 10)
     };
 }
 
-function getRecipeDetail(parameters) {
-    const { recipe_id } = parameters;
-    const recipe = RECIPE_DATA.find(r => r.id === recipe_id);
+// 卦の詳細取得関数
+function getHexagramDetail(parameters) {
+    const { hexagram_id } = parameters;
+    const hexagram = FORTUNE_KNOWLEDGE_DATA.find(h => h.id === hexagram_id);
     
-    if (recipe) {
-        return { success: true, recipe: recipe };
+    if (hexagram) {
+        return { 
+            success: true, 
+            hexagram: hexagram 
+        };
     } else {
-        return { success: false, message: `レシピID "${recipe_id}" が見つかりません` };
+        return { 
+            success: false, 
+            message: `卦ID "${hexagram_id}" が見つかりません` 
+        };
     }
-}
-
-function getUserFavorites(parameters) {
-    const favorites = RECIPE_DATA.filter(recipe => 
-        recipe.categories.includes('teiban')
-    );
-    
-    return {
-        success: true,
-        count: favorites.length,
-        recipes: favorites
-    };
 }
 
 // ツール実行状況を表示する関数
@@ -264,7 +326,7 @@ function updateFunctionCallingStatus(statusDiv, results) {
     }, 0);
     
     console.log('🔢 totalResults:', totalResults);
-    resultSummary.innerHTML = `✅ <strong>実行完了</strong> - ${totalResults}件のレシピデータを取得`;
+    resultSummary.innerHTML = `✅ <strong>実行完了</strong> - ${totalResults}件の占い知識データを取得`;
     statusDiv.appendChild(resultSummary);
     console.log('✅ resultSummary DOM追加完了');
 }
@@ -373,7 +435,7 @@ async function sendMessage() {
                 messages: [
                     {
                         role: "system",
-                        content: `あなたは「易占いアシスタント」です。古代中国の易学（周易）の専門家として、人生の悩みや疑問にお答えします。
+                        content: `あなたは「占い知識アシスタント」です。古代中国の易学（周易）の専門家として、占いの知識を提供し、人生の悩みや疑問にお答えします。
 
 あなたの専門知識:
 - 六十四卦: 乾・坤から始まる64の卦象とその意味
@@ -382,13 +444,16 @@ async function sendMessage() {
 - 陰陽思想: 陰爻と陽爻の調和とバランス
 
 利用可能な関数:
+- search_fortune_knowledge: 占いの知識を検索します（卦名、意味、キーワードなど）
+- get_hexagram_detail: 特定の卦の詳細情報を取得します
 - perform_divination: 易占いを実行します（筮竹法・コイン法）
 
-【重要】ユーザーが以下のような質問をした場合は、perform_divination関数を実行してください：
-- 占いや運勢に関する質問
-- 人生の選択で迷っている相談
-- 恋愛、仕事、健康、人間関係の悩み
-- 「占って」「運勢を見て」などの直接的な依頼
+【重要】ユーザーが以下のような質問をした場合は、適切な関数を実行してください：
+- 卦の意味や知識について → search_fortune_knowledge
+- 特定の卦の詳細 → get_hexagram_detail
+- 占いや運勢に関する質問 → perform_divination
+- 人生の選択で迷っている相談 → perform_divination
+- 恋愛、仕事、健康、人間関係の悩み → perform_divination
 
 回答スタイル:
 - 古風で丁寧、かつ親しみやすい口調
@@ -461,7 +526,7 @@ async function sendMessage() {
                     messages: [
                         {
                             role: "system", 
-                            content: `あなたは「易占いアシスタント」です。古代中国の易学（周易）の専門家として、人生の悩みや疑問にお答えします。
+                            content: `あなたは「占い知識アシスタント」です。古代中国の易学（周易）の専門家として、占いの知識を提供し、人生の悩みや疑問にお答えします。
 
 関数実行結果を基に、詳しく丁寧な解釈を提供してください。卦の意味、陰陽五行の観点、現実的なアドバイスを含めて説明してください。`
                         },
@@ -693,8 +758,8 @@ function hideMessageModal() {
 
 // 初期化
 document.addEventListener('DOMContentLoaded', async function() {
-    // 易占いデータを読み込み
-    await loadHexagramData();
+    // 占い知識データを読み込み
+    await loadFortuneKnowledgeData();
     
     // スマホ最適化を適用
     optimizeForMobile();
@@ -724,8 +789,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     
     // ウェルカムメッセージ
-    addMessage('☯️ 易占いアシスタントへようこそ！\\n\\n古代中国の易学に基づいて、あなたの質問にお答えします。何でもお気軽にご相談ください。', false, false);
+    addMessage('☯️ 占い知識アシスタントへようこそ！\n\n古代中国の易学に基づいて、占いの知識を提供し、あなたの質問にお答えします。何でもお気軽にご相談ください。', false, false);
 
     // 起動メッセージを表示
-    showStatus('✓ 易占いアシスタントが起動しました');
+    showStatus('✓ 占い知識アシスタントが起動しました');
 });

@@ -219,7 +219,7 @@ h2 {
     margin-bottom: 20px;
     font-size: 2.5em;
     font-weight: 700;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #8b0000 50%, #ff6b6b 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -281,9 +281,9 @@ h2::after {
     transform: translateX(-50%);
     width: 80px;
     height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    background: linear-gradient(90deg, #c0392b, #8b0000, #ff6b6b);
     border-radius: 2px;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(192, 57, 43, 0.3);
 }
 
 
@@ -323,7 +323,7 @@ h2::after {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #c0392b, #8b0000);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -338,7 +338,7 @@ h2::after {
 }
 
 .user { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    background: linear-gradient(135deg, #c0392b 0%, #8b0000 100%); 
     color: white; 
     text-align: right;
     margin-left: 10%;
@@ -352,7 +352,7 @@ h2::after {
     top: 20px;
     width: 0;
     height: 0;
-    border-left: 8px solid #764ba2;
+    border-left: 8px solid #8b0000;
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
 }
@@ -361,7 +361,7 @@ h2::after {
     background: white;
     color: #2c3e50;
     margin-right: 10%;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #c0392b;
     position: relative;
 }
 
@@ -372,7 +372,7 @@ h2::after {
     top: 20px;
     width: 0;
     height: 0;
-    border-right: 8px solid #667eea;
+    border-right: 8px solid #c0392b;
     border-top: 8px solid transparent;
     border-bottom: 8px solid transparent;
 }
@@ -398,8 +398,8 @@ input {
 
 input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+    border-color: #c0392b;
+    box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.15);
     transform: translateY(-2px);
 }
 
@@ -410,7 +410,7 @@ input::placeholder {
 
 /* タイピングアニメーション用のプレースホルダー */
 .typing-placeholder {
-    color: #667eea;
+    color: #c0392b;
     font-style: normal;
     font-weight: 500;
 }
@@ -419,7 +419,7 @@ input::placeholder {
     display: inline-block;
     width: 2px;
     height: 1.2em;
-    background: #667eea;
+    background: #c0392b;
     margin-left: 2px;
     animation: blink 1s infinite;
     vertical-align: text-bottom;
@@ -427,7 +427,7 @@ input::placeholder {
 
 button { 
     padding: 15px 25px; 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #8b0000 100%);
     color: white; 
     border: none; 
     border-radius: 30px; 
@@ -435,7 +435,7 @@ button {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(192, 57, 43, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -457,7 +457,7 @@ button:hover::before {
 
 button:hover:not(:disabled) {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 10px 30px rgba(192, 57, 43, 0.4);
 }
 
 button:active:not(:disabled) {
@@ -490,7 +490,7 @@ button:disabled {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    background: linear-gradient(90deg, #c0392b, #8b0000, #ff6b6b);
 }
 
 .error { 
@@ -538,13 +538,13 @@ button:disabled {
 }
 
 .messages::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #c0392b, #8b0000);
     border-radius: 10px;
     border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .messages::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #5a6fd8, #6a4190);
+    background: linear-gradient(135deg, #a93226, #7b0000);
 }
 
 /* レスポンシブデザイン */
@@ -676,7 +676,7 @@ button:disabled {
     display: inline-block;
     width: 2px;
     height: 1.2em;
-    background: #667eea;
+    background: #c0392b;
     margin-left: 2px;
     animation: blink 1s infinite;
     vertical-align: text-bottom;
@@ -723,7 +723,7 @@ button:disabled {
     bottom: 20px;
     left: 20px;
     right: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #8b0000 100%);
     color: white;
     padding: 20px;
     border-radius: 16px;
@@ -755,7 +755,7 @@ button:disabled {
 
 .install-btn {
     background: white;
-    color: #667eea;
+    color: #c0392b;
 }
 
 .install-btn:hover {
@@ -786,13 +786,13 @@ button:disabled {
 /* タイトルのグローアニメーション */
 @keyframes titleGlow {
     0% {
-        filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3));
+        filter: drop-shadow(0 0 5px rgba(192, 57, 43, 0.3));
     }
     50% {
-        filter: drop-shadow(0 0 15px rgba(102, 126, 234, 0.5));
+        filter: drop-shadow(0 0 15px rgba(192, 57, 43, 0.5));
     }
     100% {
-        filter: drop-shadow(0 0 25px rgba(102, 126, 234, 0.7));
+        filter: drop-shadow(0 0 25px rgba(192, 57, 43, 0.7));
     }
 }
 
@@ -846,7 +846,7 @@ button:disabled {
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #8b0000 100%);
     color: white;
     padding: 20px 25px;
     display: flex;
@@ -910,9 +910,9 @@ button:disabled {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(102, 126, 234, 0.1);
-    border: 1px solid rgba(102, 126, 234, 0.3);
-    color: #667eea;
+    background: rgba(192, 57, 43, 0.1);
+    border: 1px solid rgba(192, 57, 43, 0.3);
+    color: #c0392b;
     font-size: 16px;
     width: 32px;
     height: 32px;
@@ -929,8 +929,8 @@ button:disabled {
 
 .detail-btn:hover {
     opacity: 1;
-    background: rgba(102, 126, 234, 0.2);
-    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(192, 57, 43, 0.2);
+    border-color: rgba(192, 57, 43, 0.5);
     transform: scale(1.1);
 }
 
@@ -941,7 +941,7 @@ button:disabled {
 /* メッセージホバー時にボタンを強調 */
 .ai:hover .detail-btn {
     opacity: 1;
-    background: rgba(102, 126, 234, 0.15);
+    background: rgba(192, 57, 43, 0.15);
 }
 
 /* モーダル用アニメーション */
@@ -992,7 +992,7 @@ button:disabled {
 @media (hover: none) and (pointer: coarse) {
     .detail-btn {
         opacity: 1;
-        background: rgba(102, 126, 234, 0.15);
+        background: rgba(192, 57, 43, 0.15);
         min-width: 44px;
         min-height: 44px;
         width: 36px;

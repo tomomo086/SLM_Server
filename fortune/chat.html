@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>易占いアシスタント - 陰陽五行で未来を読み解く</title>
+    <title>占い知識アシスタント</title>
     <link rel="stylesheet" href="styles.css">
     
     <!-- PWA対応 -->
@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#c0392b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="易占いAI">
+    <meta name="apple-mobile-web-app-title" content="占い知識AI">
     <link rel="apple-touch-icon" href="icon.svg">
     
     <!-- インストール促進 -->
@@ -19,32 +19,33 @@
 </head>
 <body>
     <div class="container">
-        <h2>☄️ 易占いアシスタント ☄️</h2>
+        <h2>占い知識アシスタント</h2>
         
         <div id="status"></div>
         <div class="messages" id="messages">
             <!-- 初期メッセージ -->
             <div class="message ai welcome-message">
                 <div class="welcome-content">
-                    <h3>☯️ 易占いアシスタントへようこそ！</h3>
-                    <p>古代中国の易学（周易）に基づいて、あなたの人生の疑問や悩みにお答えします。六十四卦と陰陽五行の智慧で未来を読み解きます。</p>
+                    <h3>🔮 占い知識アシスタントへようこそ！</h3>
+                    <p>古代中国の易学（周易）に基づいて、占いの知識を提供し、あなたの人生の疑問や悩みにお答えします。六十四卦と陰陽五行の智慧で未来を読み解きます。</p>
                     <div class="example-queries">
-                        <p><strong>相談例：</strong></p>
+                        <p><strong>例：</strong></p>
                         <ul>
+                            <li>「乾の卦について教えてください」</li>
+                            <li>「五行の相生関係を説明してください」</li>
                             <li>「転職するべきか迷っています」</li>
                             <li>「今日の運勢を教えてください」</li>
                             <li>「恋愛について相談したい」</li>
-                            <li>「新しいプロジェクトの成功について占ってください」</li>
                             <li>「人間関係の悩みがあります」</li>
                         </ul>
                     </div>
-                    <p class="tip">🔮 筮竹法・コイン法で本格的な易占いを体験できます！</p>
+                    <p class="tip">💡 占いの知識検索と筮竹法・コイン法で本格的な易占いを体験できます！</p>
                 </div>
             </div>
         </div>
         
         <div class="input-area">
-            <input type="text" id="userInput" data-placeholders='["今日の運勢を教えてください", "人生の悩みを易占いで相談してみませんか？", "転職・恋愛・健康など、何でもご相談ください", "陰陽五行で未来を読み解きます", "古代の智慧があなたを導きます"]' onkeypress="if(event.key==='Enter') sendMessage()">
+            <input type="text" id="userInput" data-placeholders='["乾の卦について教えてください", "五行の相生関係を説明してください", "今日の運勢を教えてください", "転職・恋愛・健康など、何でもご相談ください", "陰陽五行で未来を読み解きます", "古代の智慧があなたを導きます"]' onkeypress="if(event.key==='Enter') sendMessage()">
             <button onclick="sendMessage()" id="sendBtn">送信</button>
             <button onclick="clearChat()" id="clearBtn" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">クリア</button>
         </div>
