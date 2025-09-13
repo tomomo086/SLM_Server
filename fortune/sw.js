@@ -1,4 +1,4 @@
-const CACHE_NAME = 'recipe-ai-v1';
+const CACHE_NAME = 'fortune-ai-v1';
 const urlsToCache = [
   './',
   './chat.html',
