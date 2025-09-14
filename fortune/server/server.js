@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const RecipeTools = require('./recipe-tools');
+const YijingTools = require('./yijing-tools');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
-// Recipe Tools インスタンス作成
-const recipeTools = new RecipeTools();
+// Yijing Tools インスタンス作成
+const yijingTools = new YijingTools();
 
 // CORS設定
 app.use(cors());
@@ -25,7 +25,7 @@ app.post('/v1/chat/completions', async (req, res) => {
         console.log('📨 メッセージ数:', messages.length);
         
         // Function Callingツールを自動注入
-        const toolsToUse = recipeTools.getToolsDefinition();
+        const toolsToUse = yijingTools.getToolsDefinition();
         console.log('🔧 利用可能なツール:', toolsToUse.length, '個');
 
         // LM Studio APIに転送
@@ -57,7 +57,7 @@ app.post('/v1/chat/completions', async (req, res) => {
                 
                 console.log(`⚙️ 関数「${functionName}」実行中...`);
                 
-                const result = await recipeTools.executeFunction(functionName, parameters);
+                const result = await yijingTools.executeFunction(functionName, parameters);
                 toolResults.push({
                     tool_call_id: toolCall.id,
                     role: 'tool',
@@ -118,34 +118,61 @@ app.post('/v1/chat/completions', async (req, res) => {
     }
 });
 
-// レシピAPI エンドポイント（デバッグ用）
-app.get('/api/recipes', (req, res) => {
-    const recipes = recipeTools.searchEngine.getAllRecipes();
-    res.json({
-        success: true,
-        count: recipes.length,
-        recipes: recipes
-    });
+// 易経API エンドポイント（デバッグ用）
+app.get('/api/yijing/documents', async (req, res) => {
+    try {
+        const summary = await yijingTools.getAllDocumentsSummary();
+        res.json(summary);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
-app.get('/api/recipes/:id', (req, res) => {
-    const recipe = recipeTools.searchEngine.getRecipeDetail(req.params.id);
-    if (recipe) {
-        res.json({ success: true, recipe });
-    } else {
-        res.status(404).json({ 
-            success: false, 
-            message: 'レシピが見つかりません' 
+app.get('/api/yijing/documents/:id', async (req, res) => {
+    try {
+        const includeFullText = req.query.full === 'true';
+        const document = await yijingTools.getYijingDocument(req.params.id, includeFullText);
+        res.json(document);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/yijing/search', async (req, res) => {
+    try {
+        const keyword = req.query.keyword;
+        const maxResults = parseInt(req.query.max) || 5;
+
+        if (!keyword) {
+            return res.status(400).json({
+                success: false,
+                error: 'キーワードが必要です'
+            });
+        }
+
+        const results = await yijingTools.searchYijingByKeyword(keyword, maxResults);
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
         });
     }
 });
 
 // サーバー起動
 app.listen(PORT, () => {
-    console.log('🍽️ Recipe SLM Function Calling サーバー起動');
+    console.log('🔮 易経 SLM Function Calling サーバー起動');
     console.log(`📡 サーバーアドレス: http://localhost:${PORT}`);
     console.log('🔗 LM Studio API: http://192.168.2.107:1234');
-    console.log(`🔧 Function Tools: ${recipeTools.getToolsDefinition().length}個登録済み`);
+    console.log(`🔧 Function Tools: ${yijingTools.getToolsDefinition().length}個登録済み`);
+    console.log('📚 利用可能な易経文献:', yijingTools.getAvailableDocuments().length, '件');
     console.log('✅ 準備完了 - ブラウザでアクセスしてテストしてください');
 });
 

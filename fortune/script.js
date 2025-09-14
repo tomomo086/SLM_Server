@@ -252,6 +252,192 @@ const FUNCTION_TOOLS = [
 ];
 
 // ローカルFunction実行（占い知識検索用）
+// ページ内容取得関数（SLM向け最適化）
+async function getPageContent(parameters) {
+    const { page_number, context_pages = 0 } = parameters;
+
+    console.log(`📄 ページ内容取得: ${page_number}ページ (前後${context_pages}ページ含む)`);
+
+    // 入力値検証
+    if (!page_number || page_number < 1 || page_number > 660) {
+        return { 
+            error: true, 
+            message: "ページ番号は1-660の範囲で指定してください" 
+        };
+    }
+
+    try {
+        if (!YIJING_COMPLETE_KNOWLEDGE || !YIJING_COMPLETE_KNOWLEDGE.document_index) {
+            return { 
+                error: true, 
+                message: "易経知識データが読み込まれていません" 
+            };
+        }
+
+        console.log(`🔍 全体データ構造:`, YIJING_COMPLETE_KNOWLEDGE.collection_metadata);
+        console.log(`📋 インデックス数:`, YIJING_COMPLETE_KNOWLEDGE.document_index.length);
+
+        // 指定ページを含む文書を検索
+        const targetDoc = YIJING_COMPLETE_KNOWLEDGE.document_index.find(doc => {
+            const [startPage, endPage] = doc.page_range;
+            return page_number >= startPage && page_number <= endPage;
+        });
+
+        if (!targetDoc) {
+            return { 
+                error: true, 
+                message: `ページ${page_number}が見つかりません` 
+            };
+        }
+
+        console.log(`📖 対象文書見つかりました:`, targetDoc.document_id);
+
+        // 個別ファイルから詳細内容を取得を試行
+        let detailContent = null;
+        try {
+            // 個別ファイルが存在する場合の読み込み
+            const detailResponse = await fetch(`data/yijing_texts/${targetDoc.file_path}`);
+            if (detailResponse.ok) {
+                detailContent = await detailResponse.json();
+                console.log(`📄 詳細ファイル読み込み成功: ${targetDoc.file_path}`);
+            } else {
+                console.warn(`⚠️ 詳細ファイル読み込み失敗: ${detailResponse.status}`);
+            }
+        } catch (error) {
+            console.warn(`⚠️ 詳細ファイルアクセスエラー:`, error.message);
+        }
+
+        // SLM向け最適化: 要約形式で返却
+        const result = {
+            success: true,
+            page_info: {
+                page_number,
+                document_id: targetDoc.document_id,
+                page_range: `${targetDoc.page_range[0]}-${targetDoc.page_range[1]}`,
+                character_count: targetDoc.character_count
+            },
+            main_topics: targetDoc.main_topics || [],
+            related_hexagrams: targetDoc.hexagrams || [],
+            summary: extractPageSummary(detailContent, targetDoc, page_number),
+            key_concepts: extractKeyConcepts(targetDoc),
+            navigation: {
+                has_previous: page_number > 1,
+                has_next: page_number < 660,
+                previous_page: page_number > 1 ? page_number - 1 : null,
+                next_page: page_number < 660 ? page_number + 1 : null
+            }
+        };
+
+        // 前後ページの情報も含める場合
+        if (context_pages > 0) {
+            result.context_pages = getContextPages(page_number, context_pages);
+        }
+
+        console.log(`✅ ページ内容取得完了:`, result.page_info);
+        return result;
+
+    } catch (error) {
+        console.error('ページ内容取得エラー:', error);
+        return { 
+            error: true, 
+            message: `ページ内容の取得に失敗しました: ${error.message}` 
+        };
+    }
+}
+
+// ページ要約抽出（SLM向け最適化）
+function extractPageSummary(detailContent, docInfo, pageNumber) {
+    // 詳細コンテンツが利用できる場合
+    if (detailContent && detailContent.content) {
+        const content = detailContent.content;
+        
+        // コンテンツの最初の300文字を要約として使用
+        if (typeof content === 'string') {
+            const summary = content.substring(0, 300);
+            return summary.length < content.length ? summary + "..." : summary;
+        }
+
+        // 構造化されたコンテンツの場合
+        if (content.sections && content.sections.length > 0) {
+            const firstSection = content.sections[0];
+            if (firstSection.text) {
+                const summary = firstSection.text.substring(0, 300);
+                return summary.length < firstSection.text.length ? summary + "..." : summary;
+            }
+        }
+    }
+
+    // 詳細コンテンツが利用できない場合、docInfoから要約を作成
+    const summaryParts = [];
+    
+    // ページ範囲の情報
+    summaryParts.push(`ページ${pageNumber}は${docInfo.document_id}文書に含まれています（${docInfo.page_range[0]}-${docInfo.page_range[1]}ページ）。`);
+    
+    // 関連する卦の情報
+    if (docInfo.hexagrams && docInfo.hexagrams.length > 0) {
+        const hexagramList = docInfo.hexagrams.slice(0, 5).join('、');
+        summaryParts.push(`関連する卦：${hexagramList}など。`);
+    }
+    
+    // トピック情報
+    if (docInfo.main_topics && docInfo.main_topics.length > 0) {
+        const topicList = docInfo.main_topics.slice(0, 3).join('、');
+        summaryParts.push(`主要トピック：${topicList}。`);
+    }
+    
+    // 文字数情報
+    summaryParts.push(`全体で${docInfo.character_count}文字の内容が含まれています。`);
+    
+    return summaryParts.join(' ') || "要約情報が利用できません";
+}
+
+// キー概念抽出
+function extractKeyConcepts(docInfo) {
+    const concepts = [];
+    
+    // 卦名から概念を抽出
+    if (docInfo.hexagrams && docInfo.hexagrams.length > 0) {
+        concepts.push(...docInfo.hexagrams.slice(0, 5)); // 最初の5つの卦
+    }
+    
+    // トピックから概念を抽出
+    if (docInfo.main_topics && docInfo.main_topics.length > 0) {
+        concepts.push(...docInfo.main_topics.slice(0, 3)); // 最初の3つのトピック
+    }
+    
+    return concepts.filter((item, index, array) => array.indexOf(item) === index); // 重複除去
+}
+
+// 前後ページ情報取得
+function getContextPages(centerPage, contextRange) {
+    const startPage = Math.max(1, centerPage - contextRange);
+    const endPage = Math.min(660, centerPage + contextRange);
+    
+    const contextInfo = {
+        range: `${startPage}-${endPage}`,
+        pages: []
+    };
+    
+    for (let page = startPage; page <= endPage; page++) {
+        if (page !== centerPage) {
+            const docInfo = YIJING_COMPLETE_KNOWLEDGE.document_index.find(doc => {
+                const [start, end] = doc.page_range;
+                return page >= start && page <= end;
+            });
+            
+            if (docInfo) {
+                contextInfo.pages.push({
+                    page_number: page,
+                    document_id: docInfo.document_id,
+                    hexagrams: docInfo.hexagrams ? docInfo.hexagrams.slice(0, 3) : []
+                });
+            }
+        }
+    }
+    
+    return contextInfo;
+}
+
 async function executeLocalFunction(functionName, parameters) {
     console.log(`⚙️ ローカル関数「${functionName}」実行中...`, parameters);
 
@@ -760,14 +946,60 @@ function updateFunctionCallingStatus(statusDiv, results) {
     resultSummary.className = 'function-result-summary';
     console.log('📦 resultSummary作成完了');
     
-    const totalResults = results.reduce((sum, result) => {
-        const parsed = JSON.parse(result.content);
-        console.log('📊 parsed result:', parsed);
-        return sum + (parsed.count || 0);
-    }, 0);
+    let totalResults = 0;
+    let successCount = 0;
+    let resultDetails = [];
     
-    console.log('🔢 totalResults:', totalResults);
-    resultSummary.innerHTML = `✅ <strong>実行完了</strong> - ${totalResults}件の占い知識データを取得`;
+    results.forEach(result => {
+        try {
+            const parsed = JSON.parse(result.content);
+            console.log('📊 parsed result:', parsed);
+            
+            // 様々な戻り値形式に対応
+            if (parsed.success === true || parsed.success === undefined) {
+                successCount++;
+                
+                // カウント値の取得（複数の可能性に対応）
+                if (parsed.count !== undefined) {
+                    totalResults += parsed.count;
+                    resultDetails.push(`${parsed.count}件`);
+                } else if (parsed.documents && parsed.documents.length) {
+                    totalResults += parsed.documents.length;
+                    resultDetails.push(`${parsed.documents.length}件`);
+                } else if (parsed.results && parsed.results.length) {
+                    totalResults += parsed.results.length;
+                    resultDetails.push(`${parsed.results.length}件`);
+                } else if (parsed.hexagrams && parsed.hexagrams.length) {
+                    totalResults += parsed.hexagrams.length;
+                    resultDetails.push(`${parsed.hexagrams.length}件`);
+                } else if (parsed.page_info) {
+                    // getPageContent の場合
+                    totalResults += 1;
+                    resultDetails.push(`${parsed.page_info.page_number}ページの情報`);
+                } else {
+                    // 成功したが数値データが不明な場合
+                    totalResults += 1;
+                    resultDetails.push('1件の情報');
+                }
+            }
+        } catch (error) {
+            console.warn('結果解析エラー:', error);
+        }
+    });
+    
+    console.log('🔢 totalResults:', totalResults, 'successCount:', successCount);
+    
+    // 表示メッセージの生成
+    let displayMessage;
+    if (totalResults > 0) {
+        displayMessage = `✅ <strong>実行完了</strong> - ${totalResults}件のデータを取得`;
+    } else if (successCount > 0) {
+        displayMessage = `✅ <strong>実行完了</strong> - ${successCount}個の関数が正常実行`;
+    } else {
+        displayMessage = `⚠️ <strong>実行完了</strong> - 結果の解析に問題があります`;
+    }
+    
+    resultSummary.innerHTML = displayMessage;
     statusDiv.appendChild(resultSummary);
     console.log('✅ resultSummary DOM追加完了');
 }
