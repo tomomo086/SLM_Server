@@ -84,6 +84,32 @@
             line-height: 1.4;
         }
 
+        .assistant-card.development {
+            opacity: 0.6;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .assistant-card.development:hover {
+            transform: none;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        .development-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
         .status {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -148,14 +174,15 @@
                 </div>
             </a>
 
-            <a href="robotics/chat.html" class="assistant-card">
+            <div class="assistant-card development">
                 <div class="assistant-icon">🤖</div>
                 <div class="assistant-name">ロボ開発アシスタント</div>
                 <div class="assistant-description">
                     ロボット開発をサポート。<br>
                     Arduino、センサー、制御プログラムまで。
                 </div>
-            </a>
+                <div class="development-badge">開発中</div>
+            </div>
         </div>
 
         <div class="status">
@@ -197,8 +224,8 @@
         // ページ読み込み時にAPI接続テスト
         window.addEventListener('load', testConnection);
 
-        // カードクリック時のフィードバック
-        document.querySelectorAll('.assistant-card').forEach(card => {
+        // カードクリック時のフィードバック（開発中カードは除外）
+        document.querySelectorAll('.assistant-card:not(.development)').forEach(card => {
             card.addEventListener('click', function(e) {
                 console.log('アシスタント選択:', this.querySelector('.assistant-name').textContent);
             });
