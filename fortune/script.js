@@ -199,11 +199,60 @@ const FUNCTION_TOOLS = [
                 required: ["topic"]
             }
         }
+    },
+    {
+        type: "function",
+        function: {
+            name: "search_full_text",
+            description: "易経の全文から詳細検索を行う（個別ファイルの内容も含む）",
+            parameters: {
+                type: "object",
+                properties: {
+                    query: {
+                        type: "string",
+                        description: "検索クエリ（文章、単語、概念など）"
+                    },
+                    max_results: {
+                        type: "number",
+                        description: "最大結果数（デフォルト: 10）",
+                        default: 10
+                    },
+                    context_length: {
+                        type: "number",
+                        description: "文脈表示文字数（デフォルト: 200）",
+                        default: 200
+                    }
+                },
+                required: ["query"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "get_page_content",
+            description: "特定のページ番号の内容を取得する",
+            parameters: {
+                type: "object",
+                properties: {
+                    page_number: {
+                        type: "number",
+                        description: "ページ番号（1-660）"
+                    },
+                    context_pages: {
+                        type: "number",
+                        description: "前後のページも含める数（デフォルト: 0）",
+                        default: 0
+                    }
+                },
+                required: ["page_number"]
+            }
+        }
     }
 ];
 
 // ローカルFunction実行（占い知識検索用）
-function executeLocalFunction(functionName, parameters) {
+async function executeLocalFunction(functionName, parameters) {
     console.log(`⚙️ ローカル関数「${functionName}」実行中...`, parameters);
 
     switch (functionName) {
@@ -216,11 +265,15 @@ function executeLocalFunction(functionName, parameters) {
         case 'search_yijing_content':
             return searchYijingContent(parameters);
         case 'get_yijing_document':
-            return getYijingDocument(parameters);
+            return await getYijingDocument(parameters);
         case 'get_hexagram_info':
             return getHexagramInfo(parameters);
         case 'search_by_topic':
             return searchByTopic(parameters);
+        case 'search_full_text':
+            return await searchFullText(parameters);
+        case 'get_page_content':
+            return await getPageContent(parameters);
         default:
             return { error: true, message: `未知の関数: ${functionName}` };
     }
@@ -476,7 +529,7 @@ function searchYijingContent(parameters) {
 }
 
 // 易経文書取得関数
-function getYijingDocument(parameters) {
+async function getYijingDocument(parameters) {
     const { document_id, include_full_text = false } = parameters;
     
     if (!YIJING_COMPLETE_KNOWLEDGE || !YIJING_COMPLETE_KNOWLEDGE.documents) {
@@ -509,8 +562,26 @@ function getYijingDocument(parameters) {
         }
     };
     
-    if (include_full_text && document.content) {
-        result.document.content = document.content;
+    if (include_full_text) {
+        // 詳細ファイルから全文を読み込み
+        try {
+            const detailResponse = await fetch(`data/yijing_texts/${document_id}.json`);
+            if (detailResponse.ok) {
+                const detailData = await detailResponse.json();
+                result.document.content = detailData.content;
+                result.document.full_text_loaded = true;
+                console.log(`📚 詳細ファイル読み込み成功: ${detailData.content.length}文字`);
+            } else {
+                // フォールバック: マスターファイルの内容を使用
+                result.document.content = document.content || '（詳細ファイル読み込み失敗）';
+                result.document.full_text_loaded = false;
+                console.warn(`⚠️ 詳細ファイル読み込み失敗、マスターデータを使用`);
+            }
+        } catch (error) {
+            console.error(`❌ 詳細ファイル読み込みエラー:`, error);
+            result.document.content = document.content || '（読み込みエラー）';
+            result.document.full_text_loaded = false;
+        }
     } else {
         result.document.summary = document.content ? 
             document.content.substring(0, 500) + '...' : 
@@ -885,7 +956,7 @@ async function sendMessage() {
                 
                 console.log(`⚙️ 関数「${functionName}」実行中...`, parameters);
                 
-                const result = executeLocalFunction(functionName, parameters);
+                const result = await executeLocalFunction(functionName, parameters);
                 toolResults.push({
                     tool_call_id: toolCall.id,
                     role: "tool",
