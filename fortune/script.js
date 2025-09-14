@@ -124,18 +124,13 @@ const FUNCTION_TOOLS = [
         type: "function",
         function: {
             name: "search_yijing_content",
-            description: "易経の内容をキーワードやカテゴリで検索し、関連する文書を取得する",
+            description: "易経の内容をキーワードで検索し、関連する文書を取得する",
             parameters: {
                 type: "object",
                 properties: {
                     keyword: {
                         type: "string",
-                        description: "検索キーワード（卦名、概念、人名、歴史的出来事など）"
-                    },
-                    category: {
-                        type: "string",
-                        description: "検索カテゴリ",
-                        enum: ["all", "hexagram", "person", "history", "topic", "concept"]
+                        description: "検索キーワード（卦名、概念、人名など）"
                     },
                     page_range: {
                         type: "string",
@@ -453,7 +448,7 @@ function getHexagramDetail(parameters) {
 
 // 易経コンテンツ検索関数
 function searchYijingContent(parameters) {
-    const { keyword, category = 'all', page_range } = parameters;
+    const { keyword, page_range } = parameters;
     
     if (!YIJING_COMPLETE_KNOWLEDGE || !YIJING_COMPLETE_KNOWLEDGE.documents) {
         return { 
@@ -462,7 +457,7 @@ function searchYijingContent(parameters) {
         };
     }
     
-    console.log(`📚 易経コンテンツ検索: "${keyword}" (カテゴリ: ${category}${page_range ? `, ページ範囲: ${page_range}` : ''})`);
+    console.log(`📚 易経コンテンツ検索: "${keyword}"${page_range ? ` (ページ範囲: ${page_range})` : ''}`);
     
     const searchText = keyword.toLowerCase();
     const results = [];
@@ -480,52 +475,34 @@ function searchYijingContent(parameters) {
         let score = 0;
         const matchDetails = [];
         
-        // カテゴリに応じた検索ロジック
-        switch (category) {
-            case 'person':
-                if (doc.persons && doc.persons.some(p => p.toLowerCase().includes(searchText))) {
-                    score += 100;
-                    matchDetails.push(`人物: ${doc.persons.filter(p => p.toLowerCase().includes(searchText)).join(', ')}`);
-                }
-                break;
-            case 'history':
-                if (doc.historical_events && doc.historical_events.some(e => e.toLowerCase().includes(searchText))) {
-                    score += 100;
-                    matchDetails.push(`歴史的出来事: ${doc.historical_events.filter(e => e.toLowerCase().includes(searchText)).join(', ')}`);
-                }
-                break;
-            case 'hexagram':
-            case 'topic':
-            case 'concept':
-            case 'all':
-            default:
-                // 従来のスコアリングロジック
-                if (doc.title && doc.title.toLowerCase().includes(searchText)) {
-                    score += 50;
-                    matchDetails.push(`タイトル: ${doc.title}`);
-                }
-                if (doc.keywords) {
-                    const matchedKeywords = doc.keywords.filter(k => k.toLowerCase().includes(searchText));
-                    if (matchedKeywords.length > 0) {
-                        score += matchedKeywords.length * 30;
-                        matchDetails.push(`キーワード: ${matchedKeywords.join(', ')}`);
-                    }
-                }
-                if (doc.topics) {
-                    const matchedTopics = doc.topics.filter(t => t.toLowerCase().includes(searchText));
-                    if (matchedTopics.length > 0) {
-                        score += matchedTopics.length * 25;
-                        matchDetails.push(`トピック: ${matchedTopics.join(', ')}`);
-                    }
-                }
-                // コンテンツ内も軽く検索
-                if (doc.content && doc.content.toLowerCase().includes(searchText)) {
-                    score += 10;
-                    matchDetails.push('内容にキーワードを含む');
-                }
-                break;
+        // タイトルマッチング
+        if (doc.title && doc.title.toLowerCase().includes(searchText)) {
+            score += 50;
+            matchDetails.push(`タイトル: ${doc.title}`);
         }
-
+        
+        // キーワードマッチング
+        if (doc.keywords) {
+            const matchedKeywords = doc.keywords.filter(k => 
+                k.toLowerCase().includes(searchText)
+            );
+            if (matchedKeywords.length > 0) {
+                score += matchedKeywords.length * 30;
+                matchDetails.push(`キーワード: ${matchedKeywords.join(', ')}`);
+            }
+        }
+        
+        // トピックマッチング
+        if (doc.topics) {
+            const matchedTopics = doc.topics.filter(t => 
+                t.toLowerCase().includes(searchText)
+            );
+            if (matchedTopics.length > 0) {
+                score += matchedTopics.length * 25;
+                matchDetails.push(`トピック: ${matchedTopics.join(', ')}`);
+            }
+        }
+        
         if (score > 0) {
             results.push({
                 id: doc.id,
@@ -545,7 +522,6 @@ function searchYijingContent(parameters) {
     return {
         success: true,
         keyword: keyword,
-        category: category,
         page_range: page_range,
         count: sortedResults.length,
         results: sortedResults.slice(0, 10)
