@@ -28,30 +28,34 @@ async function loadRecipeData() {
     }
 }
 
-// Function Tools定義
+// Function Tools定義（精度向上版）
 const FUNCTION_TOOLS = [
     {
         type: "function",
         function: {
             name: "search_recipes",
-            description: "材料やキーワードでレシピを検索します",
+            description: "料理名、材料名、キーワードでレシピを検索します。複数の検索条件を組み合わせてより正確な結果を得られます。",
             parameters: {
                 type: "object",
                 properties: {
                     keyword: {
                         type: "string",
-                        description: "検索するキーワード（料理名、材料名など）"
+                        description: "検索するキーワード（料理名、材料名、調理法など）。例：「豚肉」「カレー」「簡単」「10分」"
                     },
                     ingredients: {
                         type: "array",
                         items: {
                             type: "string"
                         },
-                        description: "使いたい材料のリスト"
+                        description: "使いたい材料のリスト。例：[\"豚肉\", \"玉ねぎ\", \"にんじん\"]"
                     },
                     category: {
                         type: "string",
-                        description: "料理カテゴリ（teiban, yasai, friedなど）"
+                        description: "料理カテゴリ。利用可能：teiban（定番）, yasai（野菜）, meat（肉）, chicken（鶏肉）, fish（魚）, curry（カレー）, soup（スープ）, korean（韓国料理）, chinese（中華）, egg（卵料理）, fried（揚げ物）, healthy（ヘルシー）"
+                    },
+                    cooking_time: {
+                        type: "string",
+                        description: "調理時間の目安。例：「10分」「15分」「30分」"
                     }
                 },
                 required: []
@@ -62,13 +66,13 @@ const FUNCTION_TOOLS = [
         type: "function",
         function: {
             name: "get_recipe_detail",
-            description: "レシピIDから詳細なレシピ情報を取得します",
+            description: "レシピIDから詳細なレシピ情報（材料、手順、コツ、アレンジ方法など）を取得します。",
             parameters: {
                 type: "object",
                 properties: {
                     recipe_id: {
                         type: "string",
-                        description: "レシピのID（例: recipe_001）"
+                        description: "レシピのID。例：recipe_001, recipe_002 など"
                     }
                 },
                 required: ["recipe_id"]
@@ -79,7 +83,7 @@ const FUNCTION_TOOLS = [
         type: "function",
         function: {
             name: "get_user_favorites",
-            description: "ユーザーのお気に入りレシピ（いつものレシピ）を取得します",
+            description: "ユーザーのお気に入りレシピ（定番料理）を取得します。いつもの料理や人気のレシピを表示します。",
             parameters: {
                 type: "object",
                 properties: {},
@@ -106,7 +110,7 @@ function executeLocalFunction(functionName, parameters) {
 }
 
 function searchRecipes(parameters) {
-    const { keyword = '', ingredients = [], category = null } = parameters;
+    const { keyword = '', ingredients = [], category = null, cooking_time = null } = parameters;
     
     const results = RECIPE_DATA.map(recipe => {
         let score = 0;
@@ -190,6 +194,12 @@ function searchRecipes(parameters) {
         if (category && recipe.categories.includes(category)) {
             score += 10;
             console.log(`📂 カテゴリマッチ: "${category}" → +10点`);
+        }
+
+        // 調理時間マッチング: +15点
+        if (cooking_time && recipe.cooking_time.includes(cooking_time)) {
+            score += 15;
+            console.log(`⏰ 調理時間マッチ: "${cooking_time}" → +15点`);
         }
 
         return { ...recipe, score };
@@ -394,25 +404,45 @@ async function sendMessage() {
             body: JSON.stringify({
                 model: API_CONFIG.model,
                 messages: [
-                    {
-                        role: "system",
-                        content: `あなたは「ポケット献立アシスタント」です。料理に関する質問に簡潔で分かりやすく答えてください。
+                        {
+                            role: "system",
+                            content: `あなたは「ポケット献立アシスタント」です。料理に関する質問に親しみやすく答える専門アシスタントとして振る舞ってください。
 
-## 動作ルール
-- 料理や材料について質問されたら、適切な関数を実行してください
-- レシピデータベースから具体的な情報を取得して回答してください
-- レシピの内容はできるだけ詳しい情報を提供してください
+## 重要な動作ルール
 
-## 利用可能な関数
+### Function Callingの積極活用
+- ユーザーが料理や材料について質問したら、**必ず**適切な関数を実行してください
+- 推測や一般論ではなく、レシピデータベースから**具体的な情報**を取得して回答してください
+- 関数実行結果を基に、詳しく親しみやすい説明を提供してください
+
+### 利用可能な関数
 1. **search_recipes** - 材料やキーワードでレシピ検索
+   - keyword: 料理名、材料名、調理法など
+   - ingredients: 使いたい材料のリスト
+   - category: 料理カテゴリ（teiban, yasai, meat, chicken, fish, curry, soup, korean, chinese, egg, fried, healthy）
+   - cooking_time: 調理時間（10分、15分、30分など）
 2. **get_recipe_detail** - レシピIDから詳細情報取得  
 3. **get_user_favorites** - お気に入り（定番）レシピ取得
 
-## 応答スタイル
-- 簡潔で分かりやすい口調
-- レシピの内容はできるだけ詳しい情報を提供
-- 絵文字は控えめに使用`
-                    },
+### 応答スタイル
+- 親しみやすく温かい口調
+- 料理のコツや豆知識を織り交ぜる
+- 栄養や健康面の情報も適宜提供
+- 絵文字を適度に使用（🍽️🥗🍖など）
+
+### Function Calling実行例
+**ユーザー：「豚肉の料理教えて」**
+→ search_recipes(keyword="豚肉") を実行
+→ 検索結果に基づいて豚のしょうが焼きなどを紹介
+
+**ユーザー：「10分でできる料理ある？」**  
+→ search_recipes(cooking_time="10分") を実行
+→ 短時間で作れるレシピを表示
+
+**ユーザー：「いつものレシピ見せて」**  
+→ get_user_favorites() を実行
+→ 定番レシピ一覧を表示`
+                        },
                     {
                         role: "user",
                         content: message
@@ -478,12 +508,14 @@ async function sendMessage() {
                     messages: [
                         {
                             role: "system", 
-                            content: `あなたは「ポケット献立アシスタント」です。料理に関する質問に簡潔で分かりやすく答えてください。
+                            content: `あなたは「ポケット献立アシスタント」です。料理に関する質問に親しみやすく答える専門アシスタントとして振る舞ってください。
 
-関数実行結果を基に、簡潔で要点を絞った説明を提供してください：
-- 簡潔で分かりやすい口調で回答
-- 必要最小限の情報を提供
-- 絵文字は控えめに使用`
+関数実行結果を基に、詳しく親しみやすい説明を提供してください：
+- 親しみやすく温かい口調で回答
+- 料理のコツや豆知識を織り交ぜる
+- 栄養や健康面の情報も適宜提供
+- 絵文字を適度に使用（🍽️🥗🍖など）
+- レシピの詳細情報（材料、手順、コツ、アレンジ方法）をできるだけ詳しく説明`
                         },
                         {
                             role: "user",
