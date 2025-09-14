@@ -7,21 +7,53 @@ const API_CONFIG = {
 // 占い知識データ
 let FORTUNE_KNOWLEDGE_DATA = [];
 
+// 易経知識データ（新規追加）
+let YIJING_COMPLETE_KNOWLEDGE = null;
+let YIJING_FUNCTIONS = null;
+
 // 占い知識データを読み込む関数
 async function loadFortuneKnowledgeData() {
     try {
+        // 基本的な占い知識データ
         const response = await fetch('data/fortune-knowledge.json');
         if (response.ok) {
             FORTUNE_KNOWLEDGE_DATA = await response.json();
             console.log('🔮 占い知識データ読み込み完了:', FORTUNE_KNOWLEDGE_DATA.length, '件');
-            showStatus('✓ 占い知識データが読み込まれました');
         } else {
             console.error('占い知識データの読み込みに失敗しました');
-            showStatus('⚠️ 占い知識データの読み込みに失敗しました', true);
+        }
+
+        // 易経完全知識データ
+        const yijingResponse = await fetch('data/yijing-complete-knowledge.json');
+        if (yijingResponse.ok) {
+            YIJING_COMPLETE_KNOWLEDGE = await yijingResponse.json();
+            console.log('📚 易経完全知識データ読み込み完了:', YIJING_COMPLETE_KNOWLEDGE.documents.length, '文書');
+        } else {
+            console.warn('易経完全知識データの読み込みに失敗しました');
+        }
+
+        // 易経関数定義
+        const functionsResponse = await fetch('data/yijing-functions.json');
+        if (functionsResponse.ok) {
+            YIJING_FUNCTIONS = await functionsResponse.json();
+            console.log('⚙️ 易経関数定義読み込み完了:', YIJING_FUNCTIONS.functions.length, '関数');
+        } else {
+            console.warn('易経関数定義の読み込みに失敗しました');
+        }
+
+        // 読み込み結果の表示
+        if (FORTUNE_KNOWLEDGE_DATA.length > 0) {
+            if (YIJING_COMPLETE_KNOWLEDGE && YIJING_FUNCTIONS) {
+                showStatus('✓ 基本知識＋易経知識（660ページ）読み込み完了');
+            } else {
+                showStatus('✓ 基本知識データが読み込まれました');
+            }
+        } else {
+            showStatus('⚠️ 知識データの読み込みに失敗しました', true);
         }
     } catch (error) {
-        console.error('占い知識データ読み込みエラー:', error);
-        showStatus('⚠️ 占い知識データの読み込みエラー', true);
+        console.error('知識データ読み込みエラー:', error);
+        showStatus('⚠️ 知識データの読み込みエラー', true);
     }
 }
 
@@ -87,6 +119,86 @@ const FUNCTION_TOOLS = [
                 required: ["question"]
             }
         }
+    },
+    {
+        type: "function",
+        function: {
+            name: "search_yijing_content",
+            description: "易経の内容をキーワードで検索し、関連する文書を取得する",
+            parameters: {
+                type: "object",
+                properties: {
+                    keyword: {
+                        type: "string",
+                        description: "検索キーワード（卦名、概念、人名など）"
+                    },
+                    page_range: {
+                        type: "string",
+                        description: "ページ範囲（例: '1-100', '201-300'）",
+                        enum: ["1-100", "101-200", "201-300", "301-400", "401-500", "501-600", "601-660"]
+                    }
+                },
+                required: ["keyword"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "get_yijing_document",
+            description: "特定の文書IDで易経の内容を取得する",
+            parameters: {
+                type: "object",
+                properties: {
+                    document_id: {
+                        type: "string",
+                        description: "文書ID（例: 'yijing_001_020'）"
+                    },
+                    include_full_text: {
+                        type: "boolean",
+                        description: "全文を含めるかどうか（デフォルト: false）",
+                        default: false
+                    }
+                },
+                required: ["document_id"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "get_hexagram_info",
+            description: "特定の卦（hexagram）に関する詳細情報を易経から取得する",
+            parameters: {
+                type: "object",
+                properties: {
+                    hexagram_name: {
+                        type: "string",
+                        description: "卦名（例: '乾', '坤', '屯'など）",
+                        enum: ["乾", "坤", "屯", "蒙", "需", "訟", "師", "比", "小畜", "履", "泰", "否", "同人", "大有", "謙", "豫", "随", "蛊", "臨", "観", "噬嗑", "賁", "剥", "復", "無妄", "大畜", "頤", "大過", "坎", "離", "咸", "恒", "遯", "大壮", "晋", "明夷", "家人", "睽", "蹇", "解", "損", "益", "夬", "姤", "萃", "升", "困", "井", "革", "鼎", "震", "艮", "漸", "帰妹", "豊", "旅", "巽", "兌", "渙", "節", "中孚", "小過", "既済", "未済"]
+                    }
+                },
+                required: ["hexagram_name"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "search_by_topic",
+            description: "特定のトピック（伝の種類など）で検索する",
+            parameters: {
+                type: "object",
+                properties: {
+                    topic: {
+                        type: "string",
+                        description: "トピック名",
+                        enum: ["序卦伝", "雑卦伝", "繋辞伝", "象伝", "文言伝", "説卦伝", "経", "伝", "解説"]
+                    }
+                },
+                required: ["topic"]
+            }
+        }
     }
 ];
 
@@ -101,6 +213,14 @@ function executeLocalFunction(functionName, parameters) {
             return getHexagramDetail(parameters);
         case 'perform_divination':
             return performDivination(parameters);
+        case 'search_yijing_content':
+            return searchYijingContent(parameters);
+        case 'get_yijing_document':
+            return getYijingDocument(parameters);
+        case 'get_hexagram_info':
+            return getHexagramInfo(parameters);
+        case 'search_by_topic':
+            return searchByTopic(parameters);
         default:
             return { error: true, message: `未知の関数: ${functionName}` };
     }
@@ -271,6 +391,256 @@ function getHexagramDetail(parameters) {
             message: `卦ID "${hexagram_id}" が見つかりません` 
         };
     }
+}
+
+// 易経コンテンツ検索関数
+function searchYijingContent(parameters) {
+    const { keyword, page_range } = parameters;
+    
+    if (!YIJING_COMPLETE_KNOWLEDGE || !YIJING_COMPLETE_KNOWLEDGE.documents) {
+        return { 
+            success: false, 
+            message: '易経知識データが読み込まれていません' 
+        };
+    }
+    
+    console.log(`📚 易経コンテンツ検索: "${keyword}"${page_range ? ` (ページ範囲: ${page_range})` : ''}`);
+    
+    const searchText = keyword.toLowerCase();
+    const results = [];
+    
+    YIJING_COMPLETE_KNOWLEDGE.documents.forEach(doc => {
+        // ページ範囲フィルタリング
+        if (page_range) {
+            const [startPage, endPage] = page_range.split('-').map(Number);
+            const docStartPage = parseInt(doc.id.split('_')[1]);
+            if (docStartPage < startPage || docStartPage > endPage) {
+                return;
+            }
+        }
+        
+        let score = 0;
+        const matchDetails = [];
+        
+        // タイトルマッチング
+        if (doc.title && doc.title.toLowerCase().includes(searchText)) {
+            score += 50;
+            matchDetails.push(`タイトル: ${doc.title}`);
+        }
+        
+        // キーワードマッチング
+        if (doc.keywords) {
+            const matchedKeywords = doc.keywords.filter(k => 
+                k.toLowerCase().includes(searchText)
+            );
+            if (matchedKeywords.length > 0) {
+                score += matchedKeywords.length * 30;
+                matchDetails.push(`キーワード: ${matchedKeywords.join(', ')}`);
+            }
+        }
+        
+        // トピックマッチング
+        if (doc.topics) {
+            const matchedTopics = doc.topics.filter(t => 
+                t.toLowerCase().includes(searchText)
+            );
+            if (matchedTopics.length > 0) {
+                score += matchedTopics.length * 25;
+                matchDetails.push(`トピック: ${matchedTopics.join(', ')}`);
+            }
+        }
+        
+        if (score > 0) {
+            results.push({
+                id: doc.id,
+                title: doc.title,
+                page_range: doc.page_range,
+                score: score,
+                match_details: matchDetails,
+                summary: doc.content ? doc.content.substring(0, 200) + '...' : '（要約なし）'
+            });
+        }
+    });
+    
+    const sortedResults = results.sort((a, b) => b.score - a.score);
+    
+    console.log(`📊 易経検索結果: ${sortedResults.length}件`);
+    
+    return {
+        success: true,
+        keyword: keyword,
+        page_range: page_range,
+        count: sortedResults.length,
+        results: sortedResults.slice(0, 10)
+    };
+}
+
+// 易経文書取得関数
+function getYijingDocument(parameters) {
+    const { document_id, include_full_text = false } = parameters;
+    
+    if (!YIJING_COMPLETE_KNOWLEDGE || !YIJING_COMPLETE_KNOWLEDGE.documents) {
+        return { 
+            success: false, 
+            message: '易経知識データが読み込まれていません' 
+        };
+    }
+    
+    const document = YIJING_COMPLETE_KNOWLEDGE.documents.find(doc => doc.id === document_id);
+    
+    if (!document) {
+        return {
+            success: false,
+            message: `文書ID "${document_id}" が見つかりません`
+        };
+    }
+    
+    console.log(`📖 易経文書取得: ${document_id} (全文: ${include_full_text})`);
+    
+    const result = {
+        success: true,
+        document: {
+            id: document.id,
+            title: document.title,
+            page_range: document.page_range,
+            character_count: document.character_count,
+            keywords: document.keywords,
+            topics: document.topics
+        }
+    };
+    
+    if (include_full_text && document.content) {
+        result.document.content = document.content;
+    } else {
+        result.document.summary = document.content ? 
+            document.content.substring(0, 500) + '...' : 
+            '（内容なし）';
+    }
+    
+    return result;
+}
+
+// 卦情報取得関数（易経版）
+function getHexagramInfo(parameters) {
+    const { hexagram_name } = parameters;
+    
+    if (!YIJING_COMPLETE_KNOWLEDGE || !YIJING_COMPLETE_KNOWLEDGE.documents) {
+        return { 
+            success: false, 
+            message: '易経知識データが読み込まれていません' 
+        };
+    }
+    
+    console.log(`☯️ 卦情報取得（易経）: ${hexagram_name}`);
+    
+    const results = [];
+    
+    YIJING_COMPLETE_KNOWLEDGE.documents.forEach(doc => {
+        let relevanceScore = 0;
+        const matchDetails = [];
+        
+        // タイトルに卦名が含まれているかチェック
+        if (doc.title && doc.title.includes(hexagram_name)) {
+            relevanceScore += 100;
+            matchDetails.push(`タイトル: ${doc.title}`);
+        }
+        
+        // キーワードに卦名が含まれているかチェック
+        if (doc.keywords && doc.keywords.some(k => k.includes(hexagram_name))) {
+            relevanceScore += 80;
+            const matchedKeywords = doc.keywords.filter(k => k.includes(hexagram_name));
+            matchDetails.push(`キーワード: ${matchedKeywords.join(', ')}`);
+        }
+        
+        // 内容に卦名が含まれているかチェック
+        if (doc.content && doc.content.includes(hexagram_name)) {
+            const occurrences = (doc.content.match(new RegExp(hexagram_name, 'g')) || []).length;
+            relevanceScore += occurrences * 20;
+            matchDetails.push(`内容中の出現回数: ${occurrences}回`);
+        }
+        
+        if (relevanceScore > 0) {
+            results.push({
+                id: doc.id,
+                title: doc.title,
+                page_range: doc.page_range,
+                relevance_score: relevanceScore,
+                match_details: matchDetails,
+                summary: doc.content ? doc.content.substring(0, 300) + '...' : '（内容なし）'
+            });
+        }
+    });
+    
+    const sortedResults = results.sort((a, b) => b.relevance_score - a.relevance_score);
+    
+    console.log(`☯️ ${hexagram_name}卦の情報: ${sortedResults.length}件の関連文書`);
+    
+    return {
+        success: true,
+        hexagram_name: hexagram_name,
+        count: sortedResults.length,
+        documents: sortedResults.slice(0, 5)
+    };
+}
+
+// トピック検索関数
+function searchByTopic(parameters) {
+    const { topic } = parameters;
+    
+    if (!YIJING_COMPLETE_KNOWLEDGE || !YIJING_COMPLETE_KNOWLEDGE.documents) {
+        return { 
+            success: false, 
+            message: '易経知識データが読み込まれていません' 
+        };
+    }
+    
+    console.log(`🏷️ トピック検索: ${topic}`);
+    
+    const results = [];
+    
+    YIJING_COMPLETE_KNOWLEDGE.documents.forEach(doc => {
+        let isRelevant = false;
+        const matchDetails = [];
+        
+        // タイトルにトピックが含まれているかチェック
+        if (doc.title && doc.title.includes(topic)) {
+            isRelevant = true;
+            matchDetails.push(`タイトル: ${doc.title}`);
+        }
+        
+        // トピック配列にトピックが含まれているかチェック
+        if (doc.topics && doc.topics.some(t => t.includes(topic))) {
+            isRelevant = true;
+            const matchedTopics = doc.topics.filter(t => t.includes(topic));
+            matchDetails.push(`トピック: ${matchedTopics.join(', ')}`);
+        }
+        
+        // 内容にトピックが含まれているかチェック
+        if (doc.content && doc.content.includes(topic)) {
+            isRelevant = true;
+            const occurrences = (doc.content.match(new RegExp(topic, 'g')) || []).length;
+            matchDetails.push(`内容中の出現回数: ${occurrences}回`);
+        }
+        
+        if (isRelevant) {
+            results.push({
+                id: doc.id,
+                title: doc.title,
+                page_range: doc.page_range,
+                match_details: matchDetails,
+                summary: doc.content ? doc.content.substring(0, 250) + '...' : '（内容なし）'
+            });
+        }
+    });
+    
+    console.log(`🏷️ "${topic}"トピックの検索結果: ${results.length}件`);
+    
+    return {
+        success: true,
+        topic: topic,
+        count: results.length,
+        documents: results
+    };
 }
 
 // ツール実行状況を表示する関数
@@ -447,13 +817,21 @@ async function sendMessage() {
 - search_fortune_knowledge: 占いの知識を検索します（卦名、意味、キーワードなど）
 - get_hexagram_detail: 特定の卦の詳細情報を取得します
 - perform_divination: 易占いを実行します（筮竹法・コイン法）
+- search_yijing_content: 易経の内容をキーワードで検索し、関連する文書を取得する（660ページの詳細知識）
+- get_yijing_document: 特定の文書IDで易経の内容を取得する
+- get_hexagram_info: 特定の卦に関する詳細情報を易経から取得する
+- search_by_topic: 特定のトピック（序卦伝、雑卦伝等）で検索する
 
 【重要】ユーザーが以下のような質問をした場合は、適切な関数を実行してください：
-- 卦の意味や知識について → search_fortune_knowledge
-- 特定の卦の詳細 → get_hexagram_detail
+- 卦の意味や知識について → search_fortune_knowledge または search_yijing_content
+- 特定の卦の詳細 → get_hexagram_detail または get_hexagram_info
 - 占いや運勢に関する質問 → perform_divination
 - 人生の選択で迷っている相談 → perform_divination
 - 恋愛、仕事、健康、人間関係の悩み → perform_divination
+- 易経の詳細な解説や古典的な解釈について → search_yijing_content, get_hexagram_info
+- 特定のページ範囲の内容について → search_yijing_content（page_rangeを指定）
+- 序卦伝、雑卦伝、繋辞伝などの特定の伝について → search_by_topic
+- 特定の文書ID（yijing_001_020等）の詳細 → get_yijing_document
 
 回答スタイル:
 - 古風で丁寧、かつ親しみやすい口調
