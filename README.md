@@ -122,14 +122,14 @@ LM StudioとローカルSLM（Small Language Model）を組み合わせ、**複�
   <table>
     <tr>
       <td align="center">
+        <img src="images/スクリーンショット 2025-09-15 130332.png" alt="マルチエージェントアシスタント選択画面" width="280"/>
+        <br/><strong>🤖 マルチエージェント選択画面</strong>
+        <br/>統合プラットフォームのメイン画面
+      </td>
+      <td align="center">
         <img src="images/詳細ボタン付きメッセージ画面.png" alt="詳細ボタン付きメッセージ画面" width="280"/>
         <br/><strong>📖 詳細表示ボタン機能</strong>
         <br/>AIメッセージ右上の📖ボタン
-      </td>
-      <td align="center">
-        <img src="images/詳細モーダル表示画面.png" alt="詳細モーダル表示画面" width="280"/>
-        <br/><strong>🖼️ モーダル詳細表示</strong>
-        <br/>美しいアニメーション付き別ウィンドウ
       </td>
     </tr>
   </table>
@@ -139,12 +139,12 @@ LM StudioとローカルSLM（Small Language Model）を組み合わせ、**複�
   <table>
     <tr>
       <td align="center">
-        <img src="images/最新のスマホ上部.png" alt="統合プラットフォーム上部画面" width="280"/>
-        <br/><strong>🎯 統合アシスタント選択UI</strong>
-        <br/>カード型デザインでの専門性表示
+        <img src="images/詳細モーダル表示画面.png" alt="詳細モーダル表示画面" width="280"/>
+        <br/><strong>🖼️ モーダル詳細表示</strong>
+        <br/>美しいアニメーション付き別ウィンドウ
       </td>
       <td align="center">
-        <img src="images/最新のスマホ下部.png" alt="統合プラットフォーム下部画面" width="280"/>
+        <img src="images/最新のスマホ上部.png" alt="統合プラットフォーム上部画面" width="280"/>
         <br/><strong>⚡ リアルタイム応答画面</strong>
         <br/>ストリーミング対話とFunction Calling表示
       </td>
