@@ -396,7 +396,7 @@ index.html (統合ハブ) ←→ [assistant]/chat.html (専門UI)
 このプロジェクトの開発には以下のツールを使用しました：
 
 - **LM Studio**: ローカルLLM実行環境
-- **開発ツール**: VS Code, Claude Code
+- **開発ツール**: Claude Code, Cursor
 - **AI支援機能**: コード生成・リファクタリング・マルチエージェント設計・Function Calling実装
 
 ---
@@ -405,9 +405,9 @@ index.html (統合ハブ) ←→ [assistant]/chat.html (専門UI)
 
 | 開発者 | tomomo086 + Claude |
 |--------|-------------------|
-| 開発期間 | 2025年1月 |
+| 開発期間 | 2025年9月 |
 | バージョン | 1.0.0 (マルチエージェント統合版) |
-| 開発ツール | Claude Code, LM Studio |
+| 開発ツール | Claude Code, Cursor, LM Studio |
 | 主要機能 | マルチエージェント統合, Function Calling, PWA |
 
 ## 🔗 関連リンク
@@ -418,7 +418,7 @@ index.html (統合ハブ) ←→ [assistant]/chat.html (専門UI)
 ---
 
 **作成者**: [tomomo086(@mirai_sousiyo39) + Claude]
-**最終更新**: 2025年1月
+**最終更新**: 2025年9月
 
 🤖 **AI駆動開発の実践例**
 
