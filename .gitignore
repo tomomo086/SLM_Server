@@ -82,3 +82,6 @@ pids
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Private recipe data (personal recipes should not be public)
+recipe/data/recipes.json
