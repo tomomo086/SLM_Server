@@ -38,7 +38,7 @@ The fortune system (易占いアシスタント) is an I-Ching divination assist
 - Web-based chat interface
 
 ## Access Methods
-- Main: http://192.168.2.107:8000/
-- Fortune: http://192.168.2.107:8000/fortune/chat.html
-- Recipe: http://192.168.2.107:8000/recipe/chat.html
-- Robotics: http://192.168.2.107:8000/robotics/chat.html
+- Main: http://192.168.2.100:8000/
+- Fortune: http://192.168.2.100:8000/fortune/chat.html
+- Recipe: http://192.168.2.100:8000/recipe/chat.html
+- Robotics: http://192.168.2.100:8000/robotics/chat.html

@@ -29,7 +29,7 @@ app.post('/v1/chat/completions', async (req, res) => {
         console.log('🔧 利用可能なツール:', toolsToUse.length, '個');
 
         // LM Studio APIに転送
-        const lmStudioResponse = await fetch('http://192.168.2.107:1234/v1/chat/completions', {
+        const lmStudioResponse = await fetch('http://192.168.2.100:1234/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ app.post('/v1/chat/completions', async (req, res) => {
             
             console.log('🔄 関数実行結果を含めて最終応答生成...');
             
-            const finalResponse = await fetch('http://192.168.2.107:1234/v1/chat/completions', {
+            const finalResponse = await fetch('http://192.168.2.100:1234/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ app.get('/api/recipes/:id', (req, res) => {
 app.listen(PORT, () => {
     console.log('🍽️ Recipe SLM Function Calling サーバー起動');
     console.log(`📡 サーバーアドレス: http://localhost:${PORT}`);
-    console.log('🔗 LM Studio API: http://192.168.2.107:1234');
+    console.log('🔗 LM Studio API: http://192.168.2.100:1234');
     console.log(`🔧 Function Tools: ${recipeTools.getToolsDefinition().length}個登録済み`);
     console.log('✅ 準備完了 - ブラウザでアクセスしてテストしてください');
 });

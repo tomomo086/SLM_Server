@@ -14,10 +14,10 @@
 
 2. **Verify LM Studio Connection**
    - Ensure LM Studio is running on port 1234
-   - Check API connectivity to `http://192.168.2.107:1234`
+   - Check API connectivity to `http://192.168.2.100:1234`
 
 3. **Test Web Interface**
-   - Access: `http://192.168.2.107:8000/fortune/chat.html`
+   - Access: `http://192.168.2.100:8000/fortune/chat.html`
    - Verify knowledge loading in browser console
    - Test function calls through chat interface
 

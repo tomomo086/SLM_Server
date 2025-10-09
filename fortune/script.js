@@ -1,6 +1,6 @@
 // 固定のAPI設定
 const API_CONFIG = {
-    url: 'http://192.168.2.107:1234',
+    url: 'http://192.168.2.100:1234',
     model: 'local-model' // デフォルトモデル名
 };
 
