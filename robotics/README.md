@@ -160,7 +160,7 @@ LM StudioとローカルSLM（Small Language Model）を組み合わせ、**Func
 
 ### 開発環境
 - **フロントエンド**: バニラJS + PWA + Function Calling
-- **AIエンジン**: LM Studio (http://192.168.2.107:1234)
+- **AIエンジン**: LM Studio (http://192.168.2.100:1234)
 - **実行方法**: `python -m http.server 8000`
 
 > 💡 **ポートフォリオ作品**: 技術検証・学習目的のため、詳細なセットアップ手順は省略しています。
@@ -224,7 +224,7 @@ LM StudioとローカルSLM（Small Language Model）を組み合わせ、**Func
 ## 🔧 技術構成 & ローカルLLM活用
 
 ### ローカルLLM環境
-- **LM Studio API Server** - http://192.168.2.107:1234 でローカルSLM実行
+- **LM Studio API Server** - http://192.168.2.100:1234 でローカルSLM実行
 - **Function Calling実装** - OpenAI互換Function Calling API準拠
 - **料理特化プロンプト** - 豊富なレシピデータベース内蔵（30件の詳細レシピ）
 - **OpenAI互換API** - /v1/chat/completions エンドポイントでFunction Calling対応
@@ -267,7 +267,7 @@ chat.html (UI) ←→ script.js (Function Calling + ストリーミング処理)
 - **個人化システム**: 「いつも」キーワードによる学習済みレシピ優先提案
 
 ### 🏠 ローカルAI環境の構築経験
-- **LM Studio API連携**: http://192.168.2.107:1234・OpenAI互換エンドポイント
+- **LM Studio API連携**: http://192.168.2.100:1234・OpenAI互換エンドポイント
 - **Function Calling実装**: ローカル関数実行・結果可視化・エラーハンドリング
 - **エラーハンドリング実装**: 接続失敗・ストリーミング中断・JSONパースエラー対応
 - **パフォーマンス最適化**: temperature: 0.7・ストリーミング有効化

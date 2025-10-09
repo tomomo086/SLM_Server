@@ -210,7 +210,7 @@
         // LM Studio API接続テスト
         async function testConnection() {
             try {
-                const response = await fetch('http://192.168.2.107:1234/v1/models');
+                const response = await fetch('http://192.168.2.100:1234/v1/models');
                 if (response.ok) {
                     console.log('✅ LM Studio API接続OK');
                 } else {

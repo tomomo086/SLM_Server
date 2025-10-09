@@ -227,9 +227,9 @@ python -m http.server 8000
 
 #### 開発環境
 - **フロントエンド**: バニラJS + PWA + マルチエージェント設計
-- **AIエンジン**: LM Studio (http://192.168.2.107:1234)
+- **AIエンジン**: LM Studio (http://192.168.2.100:1234)
 - **実行方法**: `python -m http.server 8000`
-- **アクセス**: 各アシスタントに専用URL（192.168.2.107:8000/[assistant]/chat.html）
+- **アクセス**: 各アシスタントに専用URL（192.168.2.100:8000/[assistant]/chat.html）
 
 > 💡 **ポートフォリオ作品**: 技術検証・学習目的のため、詳細なセットアップ手順は省略しています。
 
@@ -282,7 +282,7 @@ python -m http.server 8000
 ## 🔧 技術構成 & ローカルLLM活用
 
 ### ローカルLLM環境
-- **LM Studio API Server** - http://192.168.2.107:1234 でローカルSLM実行
+- **LM Studio API Server** - http://192.168.2.100:1234 でローカルSLM実行
 - **マルチエージェント実装** - 分野別システムプロンプト・専門知識ベース
 - **Function Calling実装** - OpenAI互換Function Calling API準拠
 - **OpenAI互換API** - /v1/chat/completions エンドポイントで全アシスタント対応
