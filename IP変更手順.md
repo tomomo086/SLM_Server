@@ -6,74 +6,40 @@ LM StudioのIPアドレスが変更された場合、**config.jsのみを編集*
 ## 変更手順
 
 ### 1. config.jsを編集
-ルートディレクトリの `config.js` を開きます：
+ルートディレクトリの `config.js` を開き、`LM_STUDIO_URL` を新しいIPアドレスに変更：
 
 ```javascript
 const CONFIG = {
-    // LM Studio API URL（ここを編集）
-    LM_STUDIO_URL: 'http://192.168.2.109:1234',  // ← 新しいIPアドレスに変更
+    LM_STUDIO_URL: 'http://192.###.#.###:1234',  // ← 新しいIPアドレスに変更
     ...
 };
 ```
 
 ### 2. サーバーを再起動
-各アシスタントのサーバーを再起動します：
+CMDからファイルサーバーを開いているのでいったん閉じる
+バッチファイルを実行してサーバーを再起動
 
-```bash
-# Recipe アシスタント
-cd recipe/server
-npm start
+### 3. ブラウザのキャッシュをクリア（重要）
 
-# Fortune アシスタント
-cd fortune/server
-npm start
+**⚠️ Chromeブラウザの場合、キャッシュを履歴からきれいにしないと古いIPで接続され続けます。**
 
-# Robotics アシスタント
-cd robotics/server
-npm start
-```
+#### Chromeでキャッシュをクリアする方法：
+1. `Ctrl + Shift + Delete` を押す（または設定 → プライバシーとセキュリティ → 閲覧履歴データの削除）
+2. 「キャッシュされた画像とファイル」にチェック
+3. 「時間の範囲」を「全期間」に設定
+4. 「データを削除」をクリック
+5. ブラウザを再起動
 
-### 3. 動作確認
+または、開発者ツールを使用：
+- `F12` で開発者ツールを開く
+- ネットワークタブで「キャッシュを無効にする」にチェック
+- ページを再読み込み（`Ctrl + Shift + R`）
 
-#### ブラウザでアクセス
-1. メイン画面: `http://localhost:8000/`
-2. Recipe: `http://localhost:8000/recipe/chat.html`
-3. Fortune: `http://localhost:8000/fortune/chat.html`
-4. Robotics: `http://localhost:8000/robotics/chat.html`
-
-#### API接続テスト
-ブラウザのコンソール（F12）で以下を確認：
-- `✅ LM Studio API接続OK` が表示されること
-- エラーがないこと
-
-## 変更が反映される箇所
-
-✅ **フロントエンド（4箇所）**
-- `index.html` - メイン画面のAPI接続テスト
-- `fortune/script.js` - 易占いアシスタント
-- `recipe/script.js` - レシピアシスタント
-- `robotics/script.js` - ロボ開発アシスタント
-
-✅ **バックエンド（3箇所）**
-- `fortune/server/server.js` - 易占いサーバー
-- `recipe/server/server.js` - レシピサーバー
-- `robotics/server/server.js` - ロボ開発サーバー
+### 4. 動作確認
+メイン画面（`http://localhost:8000/`）にアクセスし、コンソール（F12）で `✅ LM Studio API接続OK` が表示されることを確認
 
 ## トラブルシューティング
 
-### エラー: "CONFIG is not defined"
-→ HTMLファイルで `config.js` が正しく読み込まれているか確認
-
-### エラー: "Cannot find module '../../config'"
-→ `config.js` がルートディレクトリに存在するか確認
-
-### API接続エラー
-→ LM Studioが起動しているか確認
-→ IPアドレスとポート番号が正しいか確認
-
-## 今後の拡張予定
-
-将来的に実装予定の機能：
-- [ ] 自動IP検出機能（複数候補から自動選択）
-- [ ] GUI設定画面（ブラウザから設定変更可能）
-- [ ] 接続テスト機能の強化
+- **古いIPで接続される** → ブラウザのキャッシュをクリア（上記手順3を参照）
+- **API接続エラー** → LM Studioが起動しているか、IPアドレスとポート番号が正しいか確認
+- **"CONFIG is not defined"** → `config.js` がルートディレクトリに存在するか確認
