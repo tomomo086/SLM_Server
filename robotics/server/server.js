@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const RecipeTools = require('./recipe-tools');
+const CONFIG = require('../../config');
 
 const app = express();
 const PORT = 3000;
