@@ -1,6 +1,6 @@
 // 固定のAPI設定
 const API_CONFIG = {
-    url: 'http://192.168.2.100:1234',
+    url: CONFIG.LM_STUDIO_URL,
     model: 'local-model' // デフォルトモデル名
 };
 
